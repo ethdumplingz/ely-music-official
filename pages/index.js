@@ -54,7 +54,10 @@ const Index = () => (
           <img
             alt={"Ely Official Music"} src={require("../images/ely_hires.jpeg")}
             style={{
-              width: "80%",
+              width: {
+                xs: "100%",
+                md: "80%"
+            },
               maxWidth: "1024px",
               height: "auto"
             }}
