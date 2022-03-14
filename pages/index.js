@@ -1,11 +1,10 @@
-import Link from 'next/link'
+import {Container} from "@mui/material";
+
 const Index = () => (
-  <div>
-    Site coming.
-    {/*Hello World.{' '}*/}
-    {/*<Link href="/about">*/}
-    {/*  <a>About</a>*/}
-    {/*</Link>*/}
-  </div>
+  <Container
+    maxWidth={"lg"}
+  >
+  Site coming soon.
+  </Container>
 )
 export default Index;
