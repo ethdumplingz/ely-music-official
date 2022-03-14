@@ -1,5 +1,5 @@
 {
-  "name": "Ely Music Official",
+  "name": "ely-music-official",
   "version": "1.0.0",
   "scripts": {
     "dev": "next",
