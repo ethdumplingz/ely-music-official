@@ -25,7 +25,7 @@ const Index = () => (
             <Grid
               item
             >
-              <a target={"_blank"} href={"https://twitter.com"}>
+              <a target={"_blank"} href={"https://twitter.com/ratkingnft/"}>
                 <IconButton
                   sx={{
                     color: "#FFFFFF"
