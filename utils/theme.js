@@ -7,6 +7,10 @@ const theme = createTheme({
 		primary: {
 			main: '#000000'
 		},
+		secondary:{
+			main: `#661013`,
+			light: `#661013`
+		}
 	},
 	typography:{
 		fontFamily: `"Lato", "Helvetica Neue", sans-serif`
