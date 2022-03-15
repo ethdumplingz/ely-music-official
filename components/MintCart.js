@@ -1,7 +1,11 @@
 import {ButtonGroup, Button, Grid, Typography} from "@mui/material";
 import {useTheme} from "@mui/material/styles";
 import {Add, Remove} from "@mui/icons-material";
-import {useState} from "react";
+import {useState, useEffect, useCallback} from "react";
+
+import { ethers } from "ethers";
+import Web3Modal from "web3modal";
+import WalletConnectProvider from "@walletconnect/web3-provider";
 
 const UpdateCountBtn = (props) => {
 	const componentLoggingTag = `[updateCountBtn]`;
@@ -26,11 +30,36 @@ const UpdateCountBtn = (props) => {
 		</Button>
 	)
 }
+
+
+const providerOptions = {
+	walletconnect: {
+		package: WalletConnectProvider,
+		cacheProvider: true,
+		options:{
+			infuraId: '12aab9661c0b4544b655c4246c0e4bc1'
+		}
+	}
+}
+let web3Modal;
+if(typeof window !== "undefined"){
+	web3Modal = new Web3Modal({
+		network: "mainnet",
+		cacheProvider: false,
+		theme: "dark",
+		providerOptions
+	});
+}
+
 const MintCart = (props) => {
 	const componentLoggingTag = `[MintCart]`;
 	const theme = useTheme();
-	const {max=3} = props;
+	const { max = 3 } = props;
 	const [numPurchases, setPurchases] = useState(1);
+	const [web3Connected, setWeb3Connected] = useState(false);
+	// const [web3Modal, setWeb3Modal] = useState(false);
+	const [provider, setProvider] = useState(false);
+	const [signer, setSigner] = useState(false);
 	
 	const reduceNumPurchase = () => {
 		const loggingTag = `${componentLoggingTag}[reduceNumPurchase]`;
@@ -45,6 +74,31 @@ const MintCart = (props) => {
 			setPurchases(prevState => (prevState+1));
 		}
 	}
+	
+	const connectWeb3Wallet =  useCallback(async function () {
+		// This is the initial `provider` that is returned when
+		// using web3Modal to connect. Can be MetaMask or WalletConnect.
+		const provider = await web3Modal.connect()
+		setWeb3Connected(true);
+		// We plug the initial `provider` into ethers.js and get back
+		// a Web3Provider. This will add on methods from ethers.js and
+		// event listeners such as `.on()` will be different.
+		const web3Provider = new ethers.providers.Web3Provider(provider);
+		setProvider(web3Provider);
+		const signer = web3Provider.getSigner()
+		setSigner(signer);
+		const address = await signer.getAddress()
+		console.info(`${componentLoggingTag} address: ${address}`);
+		const network = await web3Provider.getNetwork()
+		
+	}, []);
+	
+	useEffect(async () => {
+		if(typeof window !== "undefined" && web3Modal.cachedProvider){
+			connect();
+			setWeb3Connected(true);
+		}
+	}, []);
 	
 	return(
 		<Grid
@@ -104,75 +158,102 @@ const MintCart = (props) => {
 						}}
 					>This is Ely's Genesis Collection.</Typography>
 				</Grid>
-				<Grid
-					item
-					container
-					flexDirection={"column"}
-					rowSpacing={2}
-				>
-					<Grid item>
-						<ButtonGroup
-							variant={"outlined"}
-							sx={{
-								display:"flex",
-								height:"100%",
-								'& .MuiButton-root':{
-									// borderColor: "#FFFFFF",
-									borderRadius: "0px"
-								},
-								justifyContent: "center",
-							}}
+				{
+					web3Connected ? (
+						<Grid
+							item
+							container
+							flexDirection={"column"}
+							rowSpacing={2}
 						>
-							<UpdateCountBtn
-								max={max}
-								onClick={reduceNumPurchase}
-							>
-								<Remove sx={{color:"#FFFFFF", fontSize:"20px"}}/>
-							</UpdateCountBtn>
-							<Button
-								disabled
-								sx={{
-									borderRightColor: max <= 1 ? "white !important" : "",
-									margin: `0px 16px !important`,
-									pl: 4,
-									pt: 1,
-									pb: 1,
-									pr: 4,
-									'&.Mui-disabled':{
-										color: "#FFFFFF",
-										borderColor: "transparent",
+							<Grid item>
+								<ButtonGroup
+									variant={"outlined"}
+									sx={{
+										display:"flex",
+										height:"100%",
+										'& .MuiButton-root':{
+											// borderColor: "#FFFFFF",
+											borderRadius: "0px"
+										},
+										justifyContent: "center",
+									}}
+								>
+									<UpdateCountBtn
+										max={max}
+										onClick={reduceNumPurchase}
+									>
+										<Remove sx={{color:"#FFFFFF", fontSize:"20px"}}/>
+									</UpdateCountBtn>
+									<Button
+										disabled
+										sx={{
+											borderRightColor: max <= 1 ? "white !important" : "",
+											margin: `0px 16px !important`,
+											pl: 8,
+											pt: 1,
+											pb: 1,
+											pr: 8,
+											'&.Mui-disabled':{
+												color: "#FFFFFF",
+												borderColor: "transparent",
+												backgroundColor: theme.palette.secondary.main
+											}
+										}}
+									>{numPurchases < 10 ? `0${numPurchases}` : numPurchases}</Button>
+									<UpdateCountBtn
+										max={max}
+										onClick={increaseNumPurchase}
+									>
+										<Add sx={{color:"#FFFFFF", fontSize:"20px"}}/>
+									</UpdateCountBtn>
+								</ButtonGroup>
+							</Grid>
+							<Grid item>
+								<Button
+									variant={"contained"}
+									sx={{
+										color: `#FFFFFF`,
+										padding: `12px 24px`,
+										textTransform: `uppercase`,
+										borderRadius: '0px',
 										backgroundColor: theme.palette.secondary.main
-									}
-								}}
-							>{numPurchases < 10 ? `0${numPurchases}` : numPurchases}</Button>
-							<UpdateCountBtn
-								max={max}
-								onClick={increaseNumPurchase}
+									}}
+								>Mint</Button>
+							</Grid>
+							<Grid item>
+								<Typography
+									sx={{
+										fontSize: "1.3rem"
+									}}
+								>Cost: 0.05 ETH</Typography>
+							</Grid>
+						</Grid>
+					) : (
+						<Grid
+							item
+							container
+							justifyContent={"center"}
+						>
+							<Grid
+								item
 							>
-								<Add sx={{color:"#FFFFFF", fontSize:"20px"}}/>
-							</UpdateCountBtn>
-						</ButtonGroup>
-					</Grid>
-					<Grid item>
-						<Button
-							variant={"contained"}
-							sx={{
-								color: `#FFFFFF`,
-								padding: `12px 24px`,
-								textTransform: `uppercase`,
-								borderRadius: '0px',
-								backgroundColor: theme.palette.secondary.main
-							}}
-						>Mint</Button>
-					</Grid>
-					<Grid item>
-						<Typography
-							sx={{
-								fontSize: "1.3rem"
-							}}
-						>Cost: 0.05 ETH</Typography>
-					</Grid>
-				</Grid>
+								<Button
+									variant={"contained"}
+									sx={{
+										backgroundColor: theme.palette.secondary.main,
+										textTransform: "uppercase",
+										borderRadius: "2px",
+										padding: "14px 24px"
+									}}
+									onClick={connectWeb3Wallet}
+								>
+									Connect Wallet
+								</Button>
+							</Grid>
+						</Grid>
+					)
+				}
 			</Grid>
 			<Grid
 				item
