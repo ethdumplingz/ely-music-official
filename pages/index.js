@@ -1,6 +1,7 @@
 import { Container, Typography, Grid } from "@mui/material";
 import AppHeader from "../components/AppHeader";
 import MintCart from "../components/MintCart";
+import SongsSection from "../components/SongsSection";
 
 const Index = () => {
   
@@ -28,15 +29,16 @@ const Index = () => {
             <MintCart/>
           </Grid>
           <Grid item>
-            <Typography
-              sx={{
-                fontWeight: 100,
-                fontSize: "1.5rem",
-                textAlign: "center",
-              }}
-            >
-              Site coming soon.
-            </Typography>
+            {/*<Typography*/}
+            {/*  sx={{*/}
+            {/*    fontWeight: 100,*/}
+            {/*    fontSize: "1.5rem",*/}
+            {/*    textAlign: "center",*/}
+            {/*  }}*/}
+            {/*>*/}
+            {/*  Site coming soon.*/}
+            {/*</Typography>*/}
+            <SongsSection/>
           </Grid>
         </Grid>
       </Container>

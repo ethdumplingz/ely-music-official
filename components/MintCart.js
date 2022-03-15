@@ -16,6 +16,7 @@ const UpdateCountBtn = (props) => {
 			onClick={onClick}
 			disabled={max <= 1}
 			sx={{
+				borderRadius: '50%',
 				border: 'none',
 				'&.MuiButton-root:hover':{
 					cursor: 'pointer',
@@ -165,6 +166,9 @@ const MintCart = (props) => {
 							container
 							flexDirection={"column"}
 							rowSpacing={2}
+							sx={{
+								mt:0
+							}}
 						>
 							<Grid item>
 								<ButtonGroup
@@ -270,8 +274,9 @@ const MintCart = (props) => {
 					alt={"Ely Official Music"} src={require("../images/ely_hires.jpeg")}
 					style={{
 						width: theme.breakpoints.down('md') ? '100%' : '80%',
-						maxWidth: "1024px",
-						height: "auto"
+						height: theme.breakpoints.down('md') ? 'auto' : '100%',
+						objectFit:"cover",
+						maxWidth: "1024px"
 					}}
 				/>
 			</Grid>
