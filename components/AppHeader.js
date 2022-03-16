@@ -49,7 +49,7 @@ const AppHeader = () => {
 								</a>
 							</Grid>
 							<Grid item>
-								<a style={{textDecoration: "underline"}} target={"_blank"} href={"https://opensea.io"}>
+								<a style={{textDecoration: "underline"}} target={"_blank"} href={"https://opensea.io/collection/ely-genesis"}>
 									<Button
 										variant={"outlined"}
 										sx={{
