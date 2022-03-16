@@ -1,4 +1,6 @@
-import {Box, ImageList, Typography} from "@mui/material";
+import {Box, ImageList, Typography, Grid} from "@mui/material";
+import "react-responsive-carousel/lib/styles/carousel.min.css"; // requires a loader
+import { Carousel } from 'react-responsive-carousel';
 import SongCard from "./SongCard";
 const songs = [
 	{
@@ -36,28 +38,56 @@ const songs = [
 ]
 const SongsSection = (props) => {
 	return (
-		<Box>
-			<Typography
-				sx={{
-					textAlign: "center",
-					fontSize: "2rem",
-					mb:4
-				}}
-			>Songs</Typography>
-			<ImageList
-				variant={"quilted"}
-				cols={3}
-				
-				gap={8}
-				
-			>
-				{
-					songs.map((song) => (
-						<SongCard key={song.id} {...song}/>
-					))
-				}
-			</ImageList>
-		</Box>
+		<Grid
+			item
+			container
+			flexDirection={"column"}
+		>
+			<Grid item>
+				<Typography
+					sx={{
+						textAlign: "center",
+						fontSize: "2rem",
+						mb:4
+					}}
+				>Songs</Typography>
+			</Grid>
+			<Grid item>
+				<Carousel
+					centerMode={true}
+					centerSlidePercentage={50}
+					selectedItem={2}
+					showStatus={false}
+					showThumbs={false}
+				>
+					{songs.map(song => (
+						<Box
+							key={song.id}
+							sx={{
+								ml: 1,
+								mr: 1
+							}}
+						>
+							<img alt={song.title} src={song.img_src}/>
+							<Typography>{song.title}</Typography>
+						</Box>
+					))}
+				</Carousel>
+				{/*<ImageList*/}
+				{/*	variant={"quilted"}*/}
+				{/*	cols={3}*/}
+				{/*	*/}
+				{/*	gap={8}*/}
+				{/*	*/}
+				{/*>*/}
+				{/*	{*/}
+				{/*		songs.map((song) => (*/}
+				{/*			<SongCard key={song.id} {...song}/>*/}
+				{/*		))*/}
+				{/*	}*/}
+				{/*</ImageList>*/}
+			</Grid>
+		</Grid>
 		
 	)
 }

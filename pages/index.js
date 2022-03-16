@@ -15,6 +15,9 @@ const Index = () => {
           container
           flexDirection={"column"}
           alignItems={"center"}
+          sx={{
+            pb: 10
+          }}
         >
           <Grid
             item
@@ -28,7 +31,19 @@ const Index = () => {
           >
             <MintCart/>
           </Grid>
-          <Grid item>
+          <Grid
+            item
+            sx={{
+              maxWidth: {
+                xs: "100%",
+                md: "none"
+              },
+              overflow: {
+                xs: "hidden",
+                md: "visible"
+              }
+            }}
+          >
             {/*<Typography*/}
             {/*  sx={{*/}
             {/*    fontWeight: 100,*/}
