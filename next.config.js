@@ -21,7 +21,8 @@ module.exports = withPlugins([
 		optipng:{
 			optimizationLevel: 3,
 		},
-		svgo:{}
+		svgo:{},
+		optimizeImagesInDev: true
 	}]
 	
 	// your other plugins here
