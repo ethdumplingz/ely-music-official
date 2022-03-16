@@ -41,8 +41,8 @@ const songs = [
 const renderCarouselImageItem = (item, options) => {
 	const componentLoggingTag = `[renderCarouselImageItem]`;
 	
-	console.info(`${componentLoggingTag} item`, item);
-	console.info(`${componentLoggingTag} props`, options);
+	// console.info(`${componentLoggingTag} item`, item);
+	// console.info(`${componentLoggingTag} props`, options);
 	const {props} = item;
 	const {title, content, src, isMobile} = props;
 	return (

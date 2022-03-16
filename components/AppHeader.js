@@ -49,7 +49,7 @@ const AppHeader = () => {
 								</a>
 							</Grid>
 							<Grid item>
-								<a target={"_blank"} href={"https://opensea.io"}>
+								<a style={{textDecoration: "underline"}} target={"_blank"} href={"https://opensea.io"}>
 									<Button
 										variant={"outlined"}
 										sx={{
@@ -58,6 +58,10 @@ const AppHeader = () => {
 											textTransform: "uppercase",
 											padding: "10px 20px",
 											borderRadius: "2px",
+											textDecoration: "none",
+											'&:hover':{
+												borderColor: "#FFFFFF"
+											}
 										}}
 									>
 										View On Opensea

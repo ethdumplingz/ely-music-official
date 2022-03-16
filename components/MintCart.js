@@ -74,6 +74,7 @@ const MintCart = (props) => {
 	const [supply, setSupply] = useState(0);
 	const [mintCount, setMintCount] = useState(0);
 	const [mintPrice, setMintPrice] = useState(0);
+	const [mintLive, setMintLive] = useState(false);
 	const [transaction, setTransaction] = useState({
 		pending: "",
 		title: "",
@@ -115,6 +116,14 @@ const MintCart = (props) => {
 				console.error(`${componentLoggingTag} Error getting price`, e);
 			}
 			
+			try{
+				const mintLiveStatus = await contractInstance.functions.purchaseable();
+				console.info(`${componentLoggingTag} purchasable`, mintLiveStatus);
+				// setMintLive(mintLiveStatus[0]);
+			} catch(e){
+				console.error(`${componentLoggingTag} set mint live`, e);
+			}
+			
 			// const humanNumber = new ethers.BigNumber.from([priceFromContract]);
 			// console.info(`${componentLoggingTag} human`, humanNumber);
 			
@@ -126,13 +135,25 @@ const MintCart = (props) => {
 		const loggingTag = `${componentLoggingTag}[mintCountUpdater]`
 		const interval = setInterval(async () => {
 			if(web3Connected && provider && signer && contract){
+				// console.info(`${loggingTag} provider`, provider, signer, contract);
 				const totalMintedCount = await contract.totalSupplyAll();
-				console.info(`${loggingTag} mintCount`, totalMintedCount.toNumber());
+
+				// console.info(`${loggingTag} mintCount`, totalMintedCount, totalMintedCount.toNumber());
 				setMintCount(totalMintedCount.toNumber());
+				
+				if(!mintLive){
+					try{
+						const mintLiveStatus = await contract.functions.purchaseable();
+						console.info(`${componentLoggingTag} purchasable`, mintLiveStatus);
+						setMintLive(mintLiveStatus[0]);
+					} catch(e){
+						console.error(`${componentLoggingTag} set mint live`, e);
+					}
+				}
 			}
 		}, 1000);
 		return () => clearInterval(interval);
-	}, [web3Connected, provider, signer, contract]);
+	}, [web3Connected, provider, signer, contract, mintLive]);
 	
 	const reduceNumPurchase = () => {
 		const loggingTag = `${componentLoggingTag}[reduceNumPurchase]`;
@@ -308,7 +329,7 @@ const MintCart = (props) => {
 					>This is Ely's Genesis Collection.</Typography>
 				</Grid>
 				{
-					web3Connected ? (
+					web3Connected && mintLive ? (
 						<Grid
 							item
 							container
@@ -388,6 +409,10 @@ const MintCart = (props) => {
 							<Grid item>
 								<Typography>Total Minted: {mintCount}/{supply}</Typography>
 							</Grid>
+						</Grid>
+					) : (!mintLive && web3Connected) ? (
+						<Grid item>
+							<Typography sx={{fontSize: "1.2rem"}}>Mint isn't live yet!</Typography>
 						</Grid>
 					) : (
 						<Grid
