@@ -7,6 +7,9 @@ import { ethers } from "ethers";
 import Web3Modal from "web3modal";
 import WalletConnectProvider from "@walletconnect/web3-provider";
 
+import contractInfo from "../utils/contract";
+import AppDialogue from "./AppDialogue";
+
 const UpdateCountBtn = (props) => {
 	const componentLoggingTag = `[updateCountBtn]`;
 	const {children, onClick = () => {}, max = 3} = props;
@@ -32,6 +35,13 @@ const UpdateCountBtn = (props) => {
 	)
 }
 
+const delay = (milliseconds = 5000) => {
+	return new Promise((resolve, reject) => {
+		setTimeout(()=>{
+			resolve(true);
+		}, milliseconds);
+	});
+}
 
 const providerOptions = {
 	walletconnect: {
@@ -45,7 +55,7 @@ const providerOptions = {
 let web3Modal;
 if(typeof window !== "undefined"){
 	web3Modal = new Web3Modal({
-		network: "mainnet",
+		network: "rinkeby",
 		cacheProvider: false,
 		theme: "dark",
 		providerOptions
@@ -61,6 +71,52 @@ const MintCart = (props) => {
 	// const [web3Modal, setWeb3Modal] = useState(false);
 	const [provider, setProvider] = useState(false);
 	const [signer, setSigner] = useState(false);
+	const [contract, setContract] = useState(false);
+	const [supply, setSupply] = useState(0);
+	const [mintCount, setMintCount] = useState(0);
+	const [mintPrice, setMintPrice] = useState(0);
+	const [transaction, setTransaction] = useState({
+		pending: "",
+		title: "",
+		content: "",
+		hash: "",
+		action: {
+			str: "OK"
+		}
+	});
+	
+	useEffect(async () => {
+		// console.info(`${componentLoggingTag} contract info`, contractInfo);
+		if(web3Connected && provider && signer){
+			const contractInstance = new ethers.Contract(contractInfo.address, contractInfo.abi, signer);
+			console.info(`${componentLoggingTag} contract`, contractInstance);
+			// const contractConnectedWithSigner = contractInstance.connect(signer);
+			console.info(`${componentLoggingTag} contract after connecting signer`, contractInstance);
+			setContract(contractInstance);
+			
+			try{
+				const supplyFromContract = await contractInstance.functions.MAX_SUPPLY();
+				console.info(`${componentLoggingTag} supply`, supplyFromContract);
+			} catch(e){
+				console.error(`${componentLoggingTag} Error:`, e);
+			}
+			
+			try{
+				const priceFromContract = await contractInstance.functions.PRICE();
+					// priceAsNum = ethers.BigNumber.from(priceFromContract[0]).toBigInt();
+				
+				console.info(`${componentLoggingTag} price`, priceFromContract);
+				setMintPrice(priceFromContract[0]);
+			} catch(e){
+				console.error(`${componentLoggingTag} Error getting price`, e);
+			}
+			
+			// const humanNumber = new ethers.BigNumber.from([priceFromContract]);
+			// console.info(`${componentLoggingTag} human`, humanNumber);
+			
+			
+		}
+	}, [web3Connected, provider, signer]);
 	
 	const reduceNumPurchase = () => {
 		const loggingTag = `${componentLoggingTag}[reduceNumPurchase]`;
@@ -91,11 +147,87 @@ const MintCart = (props) => {
 		const address = await signer.getAddress()
 		console.info(`${componentLoggingTag} address: ${address}`);
 		const network = await web3Provider.getNetwork()
-		
+		console.info(`${componentLoggingTag} network: ${network}`);
 	}, []);
 	
+	const mintTokens = useCallback(async () => {
+		const loggingTag = `${componentLoggingTag}[MintCart]`;
+		console.info(`${loggingTag} purchasing ${numPurchases} tokens...`);
+		// console.info(`${loggingTag} price: ${ethers.utils.parseUnits(50000000000000000, 'wei')}`);
+		// const value = new ethers.BigNumber.from();
+		try{
+			const gasEstimate = await contract.estimateGas.purchase(numPurchases, {
+				value: mintPrice.mul(numPurchases)
+			});
+			console.info(`${loggingTag} gas estimate`, gasEstimate.toString());
+			setTransaction((prevState)=>({
+				...prevState,
+				pending: true,
+				title: "Mint Pending...",
+				content: () => (
+					<Typography>Please complete the transaction in your wallet.</Typography>
+				)
+			}));
+			const transaction = await contract.purchase(numPurchases, {
+				value: mintPrice.mul(numPurchases),
+				gasLimit: gasEstimate.toNumber() + 100000
+			});
+			console.info(`${loggingTag} transaction submitted!`, transaction);
+			setTransaction((prevState)=>({
+				...prevState,
+				pending: true,
+				title: "Mint Submitted",
+				content: () => (
+					<Typography>View your transaction <a style={{color: theme.palette.secondary.main}} href={`https://etherscan.io/tx/${transaction.hash}`} target={"_blank"}>here</a>.</Typography>
+				)
+			}));
+			await transaction.wait();
+			// await delay(3000);
+			setTransaction((prevState)=>({
+				...prevState,
+				pending: true,
+				title: "Mint Success!"
+			}));
+			console.info(`${loggingTag} transaction complete!`);
+		} catch(e){
+			if(typeof e.code === "number" && e.code === 4001){
+				setTransaction((prevState)=>({
+					...prevState,
+					pending: true,
+					title: "Mint Failed",
+					content: () => (
+						<Typography>User denied mint transaction.</Typography>
+					)
+				}));
+			} else {
+				setTransaction((prevState)=>({
+					...prevState,
+					pending: true,
+					title: "Mint Failed",
+					content: () => (
+						<Typography>Error occurred during mint.  Please wait a bit and try again.</Typography>
+					)
+				}));
+			}
+			console.error(`${loggingTag} Error:`, typeof e.code);
+		}
+		
+	}, [contract, numPurchases, mintPrice]);
+	
+	const resetTransactionState = () => {
+		setTransaction({
+			pending: false,
+			title: "",
+			content: "",
+			hash: "",
+			action: {
+				str: ""
+			}
+		})
+	}
+	
 	useEffect(async () => {
-		if(typeof window !== "undefined" && web3Modal.cachedProvider){
+		if(web3Modal.cachedProvider){
 			connect();
 			setWeb3Connected(true);
 		}
@@ -221,8 +353,13 @@ const MintCart = (props) => {
 										padding: `12px 24px`,
 										textTransform: `uppercase`,
 										borderRadius: '0px',
-										backgroundColor: theme.palette.secondary.main
+										backgroundColor: theme.palette.secondary.main,
+										'&:hover':{
+											backgroundColor: theme.palette.secondary.dark
+										}
 									}}
+									onClick={mintTokens}
+									disabled={transaction.pending}
 								>Mint</Button>
 							</Grid>
 							<Grid item>
@@ -280,6 +417,19 @@ const MintCart = (props) => {
 					}}
 				/>
 			</Grid>
+			{
+				transaction.pending ? (
+					<AppDialogue
+						transaction={transaction}
+						title={transaction.title}
+						content={transaction.content}
+						action={{str:"Close"}}
+						onClose={resetTransactionState}
+					/>
+				) : (
+					<></>
+				)
+			}
 		</Grid>
 	)
 }
