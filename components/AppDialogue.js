@@ -99,11 +99,12 @@ const AppDialogue = ({title = "", content = "", action={str: "Save changes"}, tr
 				</DialogContent>
 				<DialogActions>
 					<Button
+						variant={"text"}
 						sx={{
 							fontSize: "16px",
 							color: theme.palette.secondary.main,
 							'&:hover':{
-								backgroundColor: '#410709'
+								color: theme.palette.secondary.dark
 							}
 						}}
 						onClick={handleClose}

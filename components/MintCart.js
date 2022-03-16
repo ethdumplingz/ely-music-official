@@ -1,4 +1,4 @@
-import {ButtonGroup, Button, Grid, Typography} from "@mui/material";
+import {ButtonGroup, Button, Grid, Typography, useMediaQuery} from "@mui/material";
 import {useTheme} from "@mui/material/styles";
 import {Add, Remove} from "@mui/icons-material";
 import {useState, useEffect, useCallback} from "react";
@@ -64,7 +64,6 @@ if(typeof window !== "undefined"){
 
 const MintCart = (props) => {
 	const componentLoggingTag = `[MintCart]`;
-	const theme = useTheme();
 	const { max = 3 } = props;
 	const [numPurchases, setPurchases] = useState(1);
 	const [web3Connected, setWeb3Connected] = useState(false);
@@ -85,6 +84,10 @@ const MintCart = (props) => {
 		}
 	});
 	
+	const theme = useTheme();
+	const isMobileDevice = useMediaQuery(theme.breakpoints.down('md'));
+	
+	
 	useEffect(async () => {
 		// console.info(`${componentLoggingTag} contract info`, contractInfo);
 		if(web3Connected && provider && signer){
@@ -97,6 +100,7 @@ const MintCart = (props) => {
 			try{
 				const supplyFromContract = await contractInstance.functions.MAX_SUPPLY();
 				console.info(`${componentLoggingTag} supply`, supplyFromContract);
+				setSupply(supplyFromContract[0].toNumber());
 			} catch(e){
 				console.error(`${componentLoggingTag} Error:`, e);
 			}
@@ -114,9 +118,21 @@ const MintCart = (props) => {
 			// const humanNumber = new ethers.BigNumber.from([priceFromContract]);
 			// console.info(`${componentLoggingTag} human`, humanNumber);
 			
-			
 		}
 	}, [web3Connected, provider, signer]);
+	
+	//updating mint count periodically
+	useEffect(()=>{
+		const loggingTag = `${componentLoggingTag}[mintCountUpdater]`
+		const interval = setInterval(async () => {
+			if(web3Connected && provider && signer && contract){
+				const totalMintedCount = await contract.totalSupplyAll();
+				console.info(`${loggingTag} mintCount`, totalMintedCount.toNumber());
+				setMintCount(totalMintedCount.toNumber());
+			}
+		}, 1000);
+		return () => clearInterval(interval);
+	}, [web3Connected, provider, signer, contract]);
 	
 	const reduceNumPurchase = () => {
 		const loggingTag = `${componentLoggingTag}[reduceNumPurchase]`;
@@ -274,7 +290,7 @@ const MintCart = (props) => {
 					backgroundColor: `rgba(255,255,255,0.15)`
 				}}
 				xs={16}
-				md={5}
+				md={6}
 			>
 				<Grid item>
 					<Typography
@@ -302,6 +318,13 @@ const MintCart = (props) => {
 								mt:0
 							}}
 						>
+							<Grid item>
+								<Typography
+									sx={{
+										fontSize: "1.2rem"
+									}}
+								>Cost: 0.05 ETH (per token)</Typography>
+							</Grid>
 							<Grid item>
 								<ButtonGroup
 									variant={"outlined"}
@@ -352,7 +375,7 @@ const MintCart = (props) => {
 										color: `#FFFFFF`,
 										padding: `12px 24px`,
 										textTransform: `uppercase`,
-										borderRadius: '0px',
+										borderRadius: '2px',
 										backgroundColor: theme.palette.secondary.main,
 										'&:hover':{
 											backgroundColor: theme.palette.secondary.dark
@@ -363,11 +386,7 @@ const MintCart = (props) => {
 								>Mint</Button>
 							</Grid>
 							<Grid item>
-								<Typography
-									sx={{
-										fontSize: "1.3rem"
-									}}
-								>Cost: 0.05 ETH</Typography>
+								<Typography>Total Minted: {mintCount}/{supply}</Typography>
 							</Grid>
 						</Grid>
 					) : (
@@ -385,7 +404,10 @@ const MintCart = (props) => {
 										backgroundColor: theme.palette.secondary.main,
 										textTransform: "uppercase",
 										borderRadius: "2px",
-										padding: "14px 24px"
+										padding: "14px 24px",
+										'&:hover':{
+											backgroundColor: theme.palette.secondary.dark
+										}
 									}}
 									onClick={connectWeb3Wallet}
 								>
@@ -399,7 +421,7 @@ const MintCart = (props) => {
 			<Grid
 				item
 				flexGrow={2}
-				xs={16} md={11}
+				xs={16} md={10}
 				sx={{
 					order:{
 						xs: 1,
@@ -410,8 +432,8 @@ const MintCart = (props) => {
 				<img
 					alt={"Ely Official Music"} src={require("../images/ely_hires.jpeg")}
 					style={{
-						width: theme.breakpoints.down('md') ? '100%' : '80%',
-						height: theme.breakpoints.down('md') ? 'auto' : '100%',
+						width: '100%',
+						height: isMobileDevice ? 'auto' : '100%',
 						objectFit:"cover",
 						maxWidth: "1024px"
 					}}

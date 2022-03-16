@@ -23,7 +23,7 @@ const SongCard = (props) => {
 			cols={matches ? 3 : cols}
 			rows={rows}
 			sx={{
-				border: `1px solid ${theme.palette.secondary.main}`
+				// border: `1px solid ${theme.palette.secondary.main}`
 			}}
 		>
 			<img
