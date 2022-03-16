@@ -149,7 +149,7 @@ const MintCart = (props) => {
 				} else {
 					const totalMintedCount = await contract.totalSupplyAll();
 					
-					// console.info(`${loggingTag} mintCount`, totalMintedCount, totalMintedCount.toNumber());
+					console.info(`${loggingTag} mintCount`, totalMintedCount, totalMintedCount.toNumber());
 					setMintCount(totalMintedCount.toNumber());
 				}
 			}
@@ -331,7 +331,37 @@ const MintCart = (props) => {
 					>This is Ely's Genesis Collection.</Typography>
 				</Grid>
 				{
-					web3Connected && mintLive ? (
+					(web3Connected && (mintCount === supply)) ? (
+						<Grid
+							item
+							container
+							spacing={2}
+							flexDirection={"column"}
+							justifyContent={"center"}
+						>
+							<Grid item>
+								<Typography sx={{fontSize: "1.6rem", fontWeight: "bold"}}>SOLD OUT</Typography>
+							</Grid>
+							<Grid item>
+								<a href={"https://opensea.io/collection/ely-genesis"} target={"_blank"}>
+									<Button
+										variant={"contained"}
+										sx={{
+											color: `#FFFFFF`,
+											padding: `12px 24px`,
+											textTransform: `uppercase`,
+											borderRadius: '2px',
+											backgroundColor: theme.palette.secondary.main,
+											'&:hover':{
+												backgroundColor: theme.palette.secondary.dark
+											}
+										}}
+									>view on opensea</Button>
+								</a>
+							</Grid>
+							
+						</Grid>
+					) : web3Connected && mintLive ? (
 						<Grid
 							item
 							container
