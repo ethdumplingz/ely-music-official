@@ -55,7 +55,7 @@ const providerOptions = {
 let web3Modal;
 if(typeof window !== "undefined"){
 	web3Modal = new Web3Modal({
-		network: "rinkeby",
+		network: "mainnet",
 		cacheProvider: false,
 		theme: "dark",
 		providerOptions
@@ -136,10 +136,7 @@ const MintCart = (props) => {
 		const interval = setInterval(async () => {
 			if(web3Connected && provider && signer && contract){
 				// console.info(`${loggingTag} provider`, provider, signer, contract);
-				const totalMintedCount = await contract.totalSupplyAll();
-
-				// console.info(`${loggingTag} mintCount`, totalMintedCount, totalMintedCount.toNumber());
-				setMintCount(totalMintedCount.toNumber());
+				
 				
 				if(!mintLive){
 					try{
@@ -149,6 +146,11 @@ const MintCart = (props) => {
 					} catch(e){
 						console.error(`${componentLoggingTag} set mint live`, e);
 					}
+				} else {
+					const totalMintedCount = await contract.totalSupplyAll();
+					
+					// console.info(`${loggingTag} mintCount`, totalMintedCount, totalMintedCount.toNumber());
+					setMintCount(totalMintedCount.toNumber());
 				}
 			}
 		}, 1000);
