@@ -1,7 +1,8 @@
-import {Box, ImageList, Typography, Grid} from "@mui/material";
+import {Box, ImageList, Typography, Grid, useMediaQuery} from "@mui/material";
 import "react-responsive-carousel/lib/styles/carousel.min.css"; // requires a loader
 import { Carousel } from 'react-responsive-carousel';
 import SongCard from "./SongCard";
+import {useTheme} from "@mui/material/styles";
 const songs = [
 	{
 		id: "bitter",
@@ -36,7 +37,70 @@ const songs = [
 		
 	},
 ]
+
+const renderCarouselImageItem = (item, options) => {
+	const componentLoggingTag = `[renderCarouselImageItem]`;
+	
+	console.info(`${componentLoggingTag} item`, item);
+	console.info(`${componentLoggingTag} props`, options);
+	const {props} = item;
+	const {title, content, src, isMobile} = props;
+	return (
+		<Box
+			sx={{
+				position: "relative",
+				ml: 2,
+				mr: 2
+			}}
+		>
+			<img
+				style={{
+					width: "100%",
+					height: "100%"
+				}}
+				alt={title}
+				src={src}
+			/>
+			<Box
+				sx={{
+					position: isMobile ? "static" : "absolute",
+					bottom: "0px",
+					left: "0px",
+					right: "0px",
+					zIndex: 1,
+					pt: 2,
+					pb: 2,
+					backgroundColor: `rgba(0,0,0,0.4)`
+				}}
+			>
+				<Box>
+					<Typography
+						sx={{
+							fontSize: isMobile ? "0.9rem" : "1.4rem",
+							fontWeight: "bold",
+							mb: 2,
+							zIndex: 1,
+							color: "#FFFFFF"
+						}}
+					>{title}</Typography>
+				</Box>
+				<Box>
+					<Typography
+						sx={{
+							fontSize: isMobile ? "0.8rem" : "1.2rem",
+							mb: 2,
+							color: "#FFFFFF"
+						}}
+					>{content}</Typography>
+				</Box>
+			</Box>
+		</Box>
+	)
+}
+
 const SongsSection = (props) => {
+	const theme = useTheme();
+	const isMobileDevice = useMediaQuery(theme.breakpoints.down('md'));
 	return (
 		<Grid
 			item
@@ -52,13 +116,22 @@ const SongsSection = (props) => {
 					}}
 				>Songs</Typography>
 			</Grid>
-			<Grid item>
+			<Grid
+				item
+				sx={{
+					maxWidth: {
+						xs: "100%",
+						md: "none"
+					}
+				}}
+			>
 				<Carousel
 					centerMode={true}
-					centerSlidePercentage={50}
+					centerSlidePercentage={isMobileDevice ? 60 : 40}
 					selectedItem={2}
 					showStatus={false}
 					showThumbs={false}
+					renderItem={renderCarouselImageItem}
 				>
 					{songs.map(song => (
 						<Box
@@ -67,9 +140,14 @@ const SongsSection = (props) => {
 								ml: 1,
 								mr: 1
 							}}
+							src={song.img_src}
+							title={song.title}
+							content={song.description}
+							isMobile={isMobileDevice}
 						>
-							<img alt={song.title} src={song.img_src}/>
-							<Typography>{song.title}</Typography>
+							{/*<img src={song.img_src}/>*/}
+							{/*<Typography>{song.title}</Typography>*/}
+							{/*<Typography>{song.description}</Typography>*/}
 						</Box>
 					))}
 				</Carousel>
